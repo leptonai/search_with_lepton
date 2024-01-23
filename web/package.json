@@ -1,0 +1,45 @@
+{
+  "name": "search",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@next/third-parties": "^14.0.4",
+    "@radix-ui/react-popover": "^1.0.7",
+    "@tailwindcss/forms": "^0.5.7",
+    "@upstash/ratelimit": "^1.0.0",
+    "@vercel/kv": "^1.0.1",
+    "clsx": "^2.1.0",
+    "headlessui": "^0.0.0",
+    "lucide-react": "^0.309.0",
+    "mdast-util-from-markdown": "^2.0.0",
+    "nanoid": "^5.0.4",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-markdown": "^9.0.1",
+    "tailwind-merge": "^2.2.0",
+    "unist-builder": "^4.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-unused-imports": "^3.0.0",
+    "postcss": "^8",
+    "prettier": "^3.1.0",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  }
+}
