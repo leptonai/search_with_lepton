@@ -165,7 +165,7 @@ class RAG(Photon):
         "openai",  # for openai client usage.
     ]
 
-    extra_files = glob.glob("assets/**/*", recursive=True)
+    extra_files = glob.glob("ui/**/*", recursive=True)
 
     deployment_template = {
         # All actual computations are carried out via remote apis, so
@@ -319,10 +319,12 @@ class RAG(Photon):
                         "content": query,
                     },
                 ],
-                tools=[{
-                    "type": "function",
-                    "function": tool.get_tools_spec(ask_related_questions),
-                }],
+                tools=[
+                    {
+                        "type": "function",
+                        "function": tool.get_tools_spec(ask_related_questions),
+                    }
+                ],
                 max_tokens=512,
             )
             related = response.choices[0].message.tool_calls[0].function.arguments
@@ -472,23 +474,9 @@ class RAG(Photon):
             media_type="text/html",
         )
 
-    @Photon.handler(method="GET", path="/")
-    def index(self) -> HTMLResponse:
-        """
-        Dummy index page to be filled by @vthinkxie
-        """
-        return HTMLResponse(
-            status_code=200,
-            content="<html><body><h1>Search with Lepton</h1></body></html>",
-            media_type="text/html",
-        )
-
     @Photon.handler(mount=True)
-    def assets(self):
-        """
-        Static assets.
-        """
-        return StaticFiles(directory="assets")
+    def ui(self):
+        return StaticFiles(directory="ui")
 
 
 if __name__ == "__main__":
