@@ -8,7 +8,7 @@ import requests
 import traceback
 from typing import Annotated, List, Generator, Optional
 
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 import httpx
 from loguru import logger
 
@@ -319,12 +319,10 @@ class RAG(Photon):
                         "content": query,
                     },
                 ],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": tool.get_tools_spec(ask_related_questions),
-                    }
-                ],
+                tools=[{
+                    "type": "function",
+                    "function": tool.get_tools_spec(ask_related_questions),
+                }],
                 max_tokens=512,
             )
             related = response.choices[0].message.tool_calls[0].function.arguments
@@ -477,6 +475,13 @@ class RAG(Photon):
     @Photon.handler(mount=True)
     def ui(self):
         return StaticFiles(directory="ui")
+
+    @Photon.handler(method="GET", path="/")
+    def index(self) -> RedirectResponse:
+        """
+        Redirects "/" to the ui page.
+        """
+        return RedirectResponse(url="/ui/index.html")
 
 
 if __name__ == "__main__":
