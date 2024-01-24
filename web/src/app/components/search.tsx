@@ -1,4 +1,5 @@
 "use client";
+import { getSearchUrl } from "@/app/utils/get-search-url";
 import { ArrowRight } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
@@ -13,9 +14,7 @@ export const Search: FC = () => {
         e.preventDefault();
         if (value) {
           setValue("");
-          router.push(
-            `/search.html?q=${encodeURIComponent(value)}&rid=${nanoid()}`,
-          );
+          router.push(getSearchUrl(encodeURIComponent(value), nanoid()));
         }
       }}
     >
