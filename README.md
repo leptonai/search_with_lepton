@@ -29,24 +29,21 @@ pip install -U leptonai && lep login
 ```
 
 
-## Development / Build
+## Build
 
 1. Set Bing subscription key
 ```shell
 export BING_SEARCH_V7_SUBSCRIPTION_KEY=YOUR_BING_SUBSCRIPTION_KEY
 ```
-2. Run server
+2. Build web
+```shell
+cd web && npm install && npm run build
+```
+3. Run server
 ```shell
 python search_with_lepton.py
 ```
-3. Run web
-```shell
-cd web && npm install && npm run dev # dev web
-```
 
-```shell
-cd web && npm install && npm run build # build web
-```
 
 
 ## Deploy
