@@ -1,7 +1,7 @@
-# Search with Lepton
+# Lepton Search
 Build your own conversational search engine using less than 500 lines of code.
 
-![image](https://github.com/leptonai/search_with_lepton/assets/1506722/845d7057-02cd-404e-bbc7-60f4bae89680)
+See a live demo site https://search.lepton.run/
 
 The source code of this project lives [here](https://github.com/leptonai/search_with_lepton/). This README will detail how to set up and deploy this project on Lepton's platform.
 
