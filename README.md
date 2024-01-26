@@ -41,7 +41,7 @@ cd web && npm install && npm run build
 ```
 3. Run server
 ```shell
-python search_with_lepton.py
+BACKEND=BING python search_with_lepton.py
 ```
 
 
@@ -55,7 +55,7 @@ You can deploy this to Lepton AI with one click:
 You can also deploy your own version via
 
 ```shell
-lep photon run -n search-with-lepton-modified -m search_with_lepton.py
+lep photon run -n search-with-lepton-modified -m search_with_lepton.py --env BACKEND=BING --env BING_SEARCH_V7_SUBSCRIPTION_KEY=YOUR_BING_SUBSCRIPTION_KEY
 ```
 
 Learn more about `lep photon` [here](https://www.lepton.ai/docs).
