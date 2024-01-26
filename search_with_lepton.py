@@ -8,6 +8,7 @@ import requests
 import traceback
 from typing import Annotated, List, Generator, Optional
 
+from fastapi import HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 import httpx
 from loguru import logger
@@ -15,7 +16,7 @@ from loguru import logger
 import leptonai
 from leptonai import Client
 from leptonai.kv import KV
-from leptonai.photon import HTTPException, Photon, StaticFiles
+from leptonai.photon import Photon, StaticFiles
 from leptonai.photon.types import to_bool
 from leptonai.api.workspace import WorkspaceInfoLocalRecord
 from leptonai.util import tool
@@ -28,6 +29,7 @@ from leptonai.util import tool
 BING_SEARCH_V7_ENDPOINT = "https://api.bing.microsoft.com/v7.0/search"
 BING_MKT = "en-US"
 GOOGLE_SEARCH_ENDPOINT = "https://customsearch.googleapis.com/customsearch/v1"
+SERPER_SEARCH_ENDPOINT = "https://google.serper.dev/search"
 
 # Specify the number of references from the search engine you want to use.
 # 8 is usually a good number.
@@ -104,10 +106,7 @@ def search_with_bing(query: str, subscription_key: str):
     )
     if not response.ok:
         logger.error(f"{response.status_code} {response.text}")
-        raise HTTPException(
-            status_code=response.status_code,
-            detail="Search engine error.",
-        )
+        raise HTTPException(response.status_code, "Search engine error.")
     json_content = response.json()
     try:
         contexts = json_content["webPages"]["value"][:REFERENCE_COUNT]
@@ -132,13 +131,48 @@ def search_with_google(query: str, subscription_key: str, cx: str):
     )
     if not response.ok:
         logger.error(f"{response.status_code} {response.text}")
-        raise HTTPException(
-            status_code=response.status_code,
-            detail="Search engine error.",
-        )
+        raise HTTPException(response.status_code, "Search engine error.")
     json_content = response.json()
     try:
         contexts = json_content["items"][:REFERENCE_COUNT]
+    except KeyError:
+        logger.error(f"Error encountered: {json_content}")
+        return []
+    return contexts
+
+
+def search_with_serper(query: str, subscription_key: str):
+    """
+    Search with serper and return the contexts.
+    """
+    payload = json.dumps({
+        "q": query,
+        "num": (
+            REFERENCE_COUNT
+            if REFERENCE_COUNT % 10 == 0
+            else (REFERENCE_COUNT // 10 + 1) * 10
+        ),
+    })
+    headers = {"X-API-KEY": subscription_key, "Content-Type": "application/json"}
+    logger.info(
+        f"{payload} {headers} {subscription_key} {query} {SERPER_SEARCH_ENDPOINT}"
+    )
+    response = requests.post(
+        SERPER_SEARCH_ENDPOINT,
+        headers=headers,
+        data=payload,
+        timeout=DEFAULT_SEARCH_ENGINE_TIMEOUT,
+    )
+    if not response.ok:
+        logger.error(f"{response.status_code} {response.text}")
+        raise HTTPException(response.status_code, "Search engine error.")
+    json_content = response.json()
+    try:
+        # convert to the same format as bing/google
+        contexts = [
+            {"name": c["title"], "url": c["link"], "snippet": c["snippet"]}
+            for c in json_content["organic"][:REFERENCE_COUNT]
+        ]
     except KeyError:
         logger.error(f"Error encountered: {json_content}")
         return []
@@ -197,6 +231,8 @@ class RAG(Photon):
             # If you use GOOGLE, you need to specify the search api key. Note that
             # you should also specify the cx in the env.
             "GOOGLE_SEARCH_API_KEY",
+            # If you use Serper, you need to specify the search api key.
+            "SERPER_SEARCH_API_KEY",
             # You need to specify the workspace token to query lepton's LLM models.
             "LEPTON_WORKSPACE_TOKEN",
         ],
@@ -255,6 +291,12 @@ class RAG(Photon):
                 query,
                 self.search_api_key,
                 os.environ["GOOGLE_SEARCH_CX"],
+            )
+        elif self.backend == "SERPER":
+            self.search_api_key = os.environ["SERPER_SEARCH_API_KEY"]
+            self.search_function = lambda query: search_with_serper(
+                query,
+                self.search_api_key,
             )
         else:
             raise RuntimeError("Backend must be LEPTON, BING or GOOGLE.")
