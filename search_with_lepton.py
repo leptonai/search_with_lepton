@@ -185,6 +185,8 @@ class RAG(Photon):
             "KV_NAME": "search-with-lepton",
             # If set to true, will generate related questions. Otherwise, will not.
             "RELATED_QUESTIONS": "true",
+            # On the lepton platform, allow web access when you are logged in.
+            "LEPTON_ENABLE_AUTH_BY_COOKIE": "true",
         },
         # Secrets you need to have: search api subscription key, and lepton
         # workspace token to query lepton's llama models.

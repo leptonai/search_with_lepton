@@ -1,6 +1,6 @@
 <div align="center">
 <h1 align="center">Search with Lepton</h1>
-Build your own Perplexity/Phind using less than 500 lines of code.
+Build your own conversational search engine using less than 500 lines of code.
 <br/>
 <br/>
 <img width="645" src="https://github.com/leptonai/search_with_lepton/assets/1506722/845d7057-02cd-404e-bbc7-60f4bae89680" height="500">
