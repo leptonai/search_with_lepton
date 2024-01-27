@@ -2,31 +2,28 @@
 import { Answer } from "@/app/components/answer";
 import { Relates } from "@/app/components/relates";
 import { Sources } from "@/app/components/sources";
-import { Relate } from "@/app/interfaces/relate";
 import { Source } from "@/app/interfaces/source";
-import { parseStreaming } from "@/app/utils/parse-streaming";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
 import { Annoyed } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 
 export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
-  const [sources, setSources] = useState<Source[]>([]);
-  const [markdown, setMarkdown] = useState<string>("");
-  const [relates, setRelates] = useState<Relate[] | null>(null);
   const [error, setError] = useState<number | null>(null);
+
+  const [searchId, setSearchId] = useState<Id<"searches"> | undefined>(undefined)
+  const search = useMutation(api.searches.createSearch);
+  const searchResponse = useQuery(api.searches.read, { id: searchId })
+
+  const markdown = searchResponse?.content || "";
+  const sources = (searchResponse?.sources || []) as Source[];
+  const relates = searchResponse?.relates.map(x => ({ question: x })) || null;
+
   useEffect(() => {
-    const controller = new AbortController();
-    void parseStreaming(
-      controller,
-      query,
-      rid,
-      setSources,
-      setMarkdown,
-      setRelates,
-      setError,
-    );
-    return () => {
-      controller.abort();
-    };
+    if (query) {
+      search({ query }).then(setSearchId);
+    }
   }, [query]);
   return (
     <div className="flex flex-col gap-8">
