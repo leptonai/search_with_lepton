@@ -16,7 +16,9 @@ export default (phase, { defaultConfig }) => {
         return [
           {
             source: "/query",
-            destination: "http://localhost:8080/query" // Proxy to Backend
+            // destination: "http://api.sciphi.ai/query" 
+            // destination: "http://127.0.0.1:8080/query"
+            destination: "/api/proxy-query" // Redirect to the new API route
           }
         ];
       }

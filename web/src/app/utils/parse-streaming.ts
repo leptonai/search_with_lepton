@@ -18,16 +18,17 @@ export const parseStreaming = async (
   let uint8Array = new Uint8Array();
   let chunks = "";
   let sourcesEmitted = false;
-  const response = await fetch(`/query`, {
+  const response = await fetch(`https://api.sciphi.ai/query`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "*./*",
+      'Authorization': `Bearer 765404bc9e5872e5f5ce36e89f70e729`,
+      // Accept: "*./*",
     },
     signal: controller.signal,
     body: JSON.stringify({
       query,
-      search_uuid,
+      // search_uuid,
     }),
   });
   if (response.status !== 200) {
@@ -48,6 +49,7 @@ export const parseStreaming = async (
     (chunk) => {
       uint8Array = new Uint8Array([...uint8Array, ...chunk]);
       chunks = decoder.decode(uint8Array, { stream: true });
+      console.log("chunks = ", chunks)
       if (chunks.includes(LLM_SPLIT)) {
         const [sources, rest] = chunks.split(LLM_SPLIT);
         if (!sourcesEmitted) {
