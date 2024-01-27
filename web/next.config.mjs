@@ -3,15 +3,7 @@ export default (phase, { defaultConfig }) => {
   /**
    * @type {import("next").NextConfig}
    */
-  if (env === "production") {
-    return {
-      output: "export",
-      assetPrefix: "/ui/",
-      basePath: "/ui",
-      distDir: "../ui"
-    };
-  } else {
-    return {
+   return {
       async rewrites() {
         return [
           {
@@ -25,4 +17,3 @@ export default (phase, { defaultConfig }) => {
       }
     };
   }
-}
