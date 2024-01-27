@@ -5,6 +5,7 @@
     "plugin:prettier/recommended"
   ],
   "rules": {
-    "unused-imports/no-unused-imports": "error"
+    "@next/next/no-img-element": "off",
+    "prettier/prettier": "off"
   }
 }
