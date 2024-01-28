@@ -46,7 +46,7 @@ export const Sources: FC<{ sources: Source[] }> = ({ sources }) => {
         </>
       }
       content={
-        <div className="flex flex-col gap-2 w-5/6">
+        <div className="flex flex-col gap-2">
           {(sources.length > 0) ? (
             sources.map((item, index) => (
               <SourceItem

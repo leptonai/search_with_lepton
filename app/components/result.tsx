@@ -35,8 +35,8 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
     })()
   }, [query]);
   return (
-    <div className="flex gap-12 w-screen">
-      <div className="flex flex-col gap-8 w-3/4">
+    <div className="flex gap-12 w-full flex-col md:flex-row">
+      <div className="flex flex-col gap-8 md:w-3/4">
         <Answer markdown={markdown} sources={sources}></Answer>
         <Relates relates={relates} />
         {error && (
