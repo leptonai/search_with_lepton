@@ -57,12 +57,9 @@ export const parseStreaming = async (
 
     uint8Array = new Uint8Array([...uint8Array, ...value]);
     chunks += decoder.decode(uint8Array, { stream: true });
-    // console.log('chunks = ', chunks)
-    // Process accumulated chunks
     let sink = '';
     let iC = 0;
     const lines = chunks.split('\n');
-    // console.log('...')
     if (lines) {
       //@ts-ignore
       chunks = lines.pop(); // Keep any incomplete line for the next iteration
@@ -81,19 +78,24 @@ export const parseStreaming = async (
         }
         // Handle data based on assumed format (adjust if needed)
         if (line.includes(LLM_SPLIT) && !chunkReply) {
-          // const [sources, md] = data.split(LLM_SPLIT);
-          // console.log('source_chunk = ', source_chunk)
-          // sink = sink.replace('data:', '')
-          // sink = sink.split('data:')[0]
-          // console.log(sink)
-          // console.log("in on sources...., line = ", line)
           onSources(JSON.parse(sink.replace(LLM_SPLIT,''))); // Assuming sources are JSON-formatted
           chunkReply = true;
-          // sink = '';
-          // markdownParse(md);
-        } else if (data.includes(RELATED_SPLIT)) {
-          const [_, relates] = data.split(RELATED_SPLIT);
-          onRelates(JSON.parse(relates)); // Assuming relates are JSON-formatted
+        } else if (sink.includes(`"queries"`) && sink.includes(RELATED_SPLIT)) {
+          console.log("sink = ", sink)
+          const [_, relates] = sink.split(`"queries":`);
+          console.log('relates = ', relates)
+          let relatesCleaned = relates.split(RELATED_SPLIT)[0].slice(0,-1).trim()//#.strip()
+          console.log('relatesCleaned = ', relatesCleaned)
+          // onRelates(JSON.parse(relates)); // Assuming relates are JSON-formatted
+          // try {
+          console.log('Length of relatesCleaned:', relatesCleaned.length);
+          console.log([...relatesCleaned].map(c => c.charCodeAt(0).toString(16)).join(' '));
+          onRelates(JSON.parse(relatesCleaned));
+          // } catch (e) {
+          //   console.error("JSON parsing error at position:", e.message);
+          //   console.log("String at error position:", relatesCleaned.slice(e.message.match(/\d+/)[0] - 10, e.message.match(/\d+/)[0] + 10));
+          // }
+          
         } else {
           // Handle other event types
         }
