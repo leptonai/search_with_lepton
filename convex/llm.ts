@@ -112,12 +112,15 @@ export const rag = internalAction({
       apiKey: serperApiKey
     });
 
-    const openApiKey = process.env.OPENAI_API_KEY
+    const openApiKey = process.env.TOGETHER_API_KEY
     if (!openApiKey) {
       throw new Error("Add your OPENAI_API_KEY as an env variable");
     }
 
-    const openai = new OpenAI({ apiKey: openApiKey });
+    const openai = new OpenAI({
+      apiKey: openApiKey,
+      baseURL: "https://api.together.xyz/v1",
+    });
 
     const resp = await serper.search(args.query)
     const sources: Array<Source> = [];
@@ -139,7 +142,7 @@ export const rag = internalAction({
     });
 
     const openaiResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
       messages: [
         {
           role: "system",
