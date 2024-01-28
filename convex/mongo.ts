@@ -64,7 +64,8 @@ export const similarSearches = action({
         ])
 
         const doc = await results.next();
-        if (doc?.search_score > 0.97) {
+        if (doc?.search_score > 0.90) {
+            console.log("cache hit");
             return doc?.searchId as string;
         }
     },
