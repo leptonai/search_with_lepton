@@ -11,12 +11,15 @@ export const relatedQuestion = internalAction({
     searchId: v.id("searches")
   },
   handler: async (ctx, args) => {
-    const openApiKey = process.env.OPENAI_API_KEY
+    const openApiKey = process.env.TOGETHER_API_KEY
     if (!openApiKey) {
-      throw new Error("Add your OPENAI_API_KEY as an env variable");
+      throw new Error("Add your TOGETHER_API_KEY as an env variable");
     }
 
-    const openai = new OpenAI({ apiKey: openApiKey });
+    const openai = new OpenAI({
+      apiKey: openApiKey,
+      baseURL: "https://api.together.xyz/v1",
+    });
 
     const search = await ctx.runQuery(api.searches.read, { id: args.searchId });
     if (!search) {
@@ -24,7 +27,7 @@ export const relatedQuestion = internalAction({
     }
 
     const resp = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
       messages: [
         {
           "role": "system",
@@ -114,7 +117,7 @@ export const rag = internalAction({
 
     const openApiKey = process.env.TOGETHER_API_KEY
     if (!openApiKey) {
-      throw new Error("Add your OPENAI_API_KEY as an env variable");
+      throw new Error("Add your TOGETHER_API_KEY as an env variable");
     }
 
     const openai = new OpenAI({
