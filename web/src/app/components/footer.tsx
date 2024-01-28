@@ -9,13 +9,13 @@ export const Footer: FC = () => {
         correctness.
       </div>
       <div className="text-zinc-400">
-        LLM, Vector DB, and other components powered by the Lepton AI platform.
+        LLM, Vector DB, and other components powered by the SciPhi AI platform.
       </div>
       <div className="flex gap-2 justify-center">
         <div>
           <a
             className="text-blue-500 font-medium inline-flex gap-1 items-center flex-nowrap text-nowrap"
-            href="mailto:info@lepton.ai"
+            href="mailto:info@SciPhi.ai"
           >
             <Mails size={8} />
             Talk to us
@@ -25,12 +25,12 @@ export const Footer: FC = () => {
       </div>
 
       <div className="flex items-center justify-center flex-wrap gap-x-4 gap-y-2 mt-2 text-zinc-400">
-        <a className="hover:text-zinc-950" href="https://lepton.ai/">
-          Lepton Home
+        <a className="hover:text-zinc-950" href="https://SciPhi.ai/">
+          SciPhi Home
         </a>
         <a
           className="hover:text-zinc-950"
-          href="https://dashboard.lepton.ai/playground"
+          href="https://dashboard.SciPhi.ai/playground"
         >
           API Playground
         </a>
