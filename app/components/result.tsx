@@ -13,7 +13,7 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
   const [error, setError] = useState<number | null>(null);
 
   const [searchId, setSearchId] = useState<Id<"searches"> | undefined>(undefined)
-  const similarSearch = useAction(api.llm.similarSearches)
+  const similarSearch = useAction(api.mongo.similarSearches)
   const search = useMutation(api.searches.createSearch);
   const searchResponse = useQuery(api.searches.read, { id: searchId })
 
@@ -25,8 +25,9 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
     (async () => {
       if (query) {
         const similar = await similarSearch({ query });
-        if (similar?._score > 0.97) {
-          setSearchId(similar._id);
+        if (similar?.search_score > 0.97) {
+          console.log("cache hit");
+          setSearchId(similar!.searchId);
         } else {
           const searchId = await search({ query });
           setSearchId(searchId)

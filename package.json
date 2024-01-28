@@ -19,6 +19,7 @@
     "headlessui": "^0.0.0",
     "lucide-react": "^0.309.0",
     "mdast-util-from-markdown": "^2.0.0",
+    "mongodb": "^6.3.0",
     "nanoid": "^5.0.4",
     "next": "14.0.4",
     "openai": "^4.26.0",

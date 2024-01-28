@@ -16,6 +16,7 @@ import type {
 } from "convex/server";
 import type * as crons from "../crons.js";
 import type * as llm from "../llm.js";
+import type * as mongo from "../mongo.js";
 import type * as searches from "../searches.js";
 
 /**
@@ -29,6 +30,7 @@ import type * as searches from "../searches.js";
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   llm: typeof llm;
+  mongo: typeof mongo;
   searches: typeof searches;
 }>;
 export declare const api: FilterApi<

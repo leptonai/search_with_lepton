@@ -7,6 +7,11 @@ export const createSearch = mutation({
         query: v.string()
     },
     handler: async (ctx, args) => {
+        const search = await ctx.db.query("searches").withIndex("by_query").filter(q => q.eq(q.field("query"), args.query)).first();
+        if (search) {
+            return search._id;
+        }
+
         const searchId = await ctx.db.insert("searches", { query: args.query, content: "", sources: [], relates: [] });
         await ctx.scheduler.runAfter(0, internal.llm.rag, {
             searchId,
