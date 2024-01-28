@@ -4,6 +4,16 @@ import { Source } from "@/app/interfaces/source";
 const LLM_SPLIT = "__LLM_RESPONSE__"; // Assuming this delimiter is still used
 const RELATED_SPLIT = "__RELATED_QUESTIONS__"; // Assuming this delimiter is still used
 
+const markdownParse = (text: string) => {
+    return text
+      .replace(/\[\[([cC])itation/g, "[citation")
+      .replace(/[cC]itation:(\d+)]]/g, "citation:$1]")
+      .replace(/\[\[([cC]itation:\d+)]](?!])/g, `[$1]`)
+      .replace(/\[[cC]itation:(\d+)]/g, "[citation]($1)")
+      .replace("\n","\\n")
+};
+
+
 export const parseStreaming = async (
   controller: AbortController,
   query: string,
@@ -30,13 +40,15 @@ export const parseStreaming = async (
     onError?.(response.status);
     return;
   }
+  if (!response.body) {
+    return;
+  }
 
   const reader = response.body.getReader();
   let decoder = new TextDecoder();
   let uint8Array = new Uint8Array();
   let chunks = '';
   let chunkReply = false;
-
   while (true) {
     const { done, value } = await reader.read();
     if (done) {
@@ -51,7 +63,10 @@ export const parseStreaming = async (
     let iC = 0;
     const lines = chunks.split('\n');
     // console.log('...')
-    chunks = lines.pop(); // Keep any incomplete line for the next iteration
+    if (lines) {
+      //@ts-ignore
+      chunks = lines.pop(); // Keep any incomplete line for the next iteration
+    }
     for (const line of lines) {
       if (line.startsWith('data:')) {
         const data = line.substring(5).trim();
@@ -62,7 +77,7 @@ export const parseStreaming = async (
         if (chunkReply && iC%5==0) {
           // console.log(sink)
           let md = sink.split(LLM_SPLIT)[1]
-          onMarkdown(md);
+          onMarkdown(markdownParse(md));
         }
         // Handle data based on assumed format (adjust if needed)
         if (line.includes(LLM_SPLIT) && !chunkReply) {

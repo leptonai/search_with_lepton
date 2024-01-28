@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Popover,
   PopoverContent,
@@ -9,6 +10,25 @@ import { Source } from "@/app/interfaces/source";
 import { BookOpenText } from "lucide-react";
 import { FC } from "react";
 import Markdown from "react-markdown";
+
+// function formatMarkdownNewLines(markdown: string) {
+//   console.log("formatting...")
+//   // Replace every newline character with two spaces followed by a newline
+//   return markdown.replace(/\n/g, '  \n').replace(/\n/g, '  \\n');
+// }
+
+// function formatMarkdownNewLines(markdown: string) {
+//   // markdown = markdown.replace(/\n/g, '<br/> ');
+//   console.log(markdown.replace(/\n/g, '<br/> '))
+//   return markdown.replace(/\n/g, '<br/> ').replace('\n','<br/>')
+//   // return markdown
+// }
+
+function formatMarkdownNewLines(markdown: string) {
+  console.log("formatting..., markdown = ", markdown)
+  return markdown.split('\\n').join('  \n').replace(/\[(\d+)]/g, '[$1]($1)').split(`"queries":`)[0].slice(2,-3);
+}
+
 
 export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
   markdown,
@@ -93,7 +113,8 @@ export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
                 },
               }}
             >
-              {markdown}
+              {formatMarkdownNewLines(markdown)}
+
             </Markdown>
           </div>
         ) : (
