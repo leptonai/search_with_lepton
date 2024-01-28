@@ -19,7 +19,7 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
 
   const markdown = searchResponse?.content || "";
   const sources = (searchResponse?.sources || []) as Source[];
-  const relates = searchResponse?.relates.map(x => ({ question: x })) || null;
+  const relates = searchResponse?.relates?.map(x => ({ question: x })) || null;
 
   useEffect(() => {
     (async () => {

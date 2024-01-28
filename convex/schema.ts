@@ -10,7 +10,7 @@ export default defineSchema({
       url: v.string(),
       snippet: v.string(),
     })),
-    relates: v.array(v.string()),
+    relates: v.optional(v.array(v.string())),
     query_embedding: v.optional(v.array(v.float64()))
   })
   .index("by_query", ["query"])

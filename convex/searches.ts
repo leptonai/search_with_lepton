@@ -12,7 +12,7 @@ export const createSearch = mutation({
             return search._id
         }
 
-        const searchId = await ctx.db.insert("searches", { query: args.query, content: "", sources: [], relates: [] });
+        const searchId = await ctx.db.insert("searches", { query: args.query, content: "", sources: [] });
         await ctx.scheduler.runAfter(0, internal.llm.rag, {
             searchId,
             ...args
