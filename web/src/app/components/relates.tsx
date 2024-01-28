@@ -17,9 +17,10 @@ export const Relates: FC<{ relates: Relate[] | null }> = ({ relates }) => {
         <div className="flex gap-2 flex-col">
           {relates !== null ? (
             relates.length > 0 ? (
-              relates.map(( question ) => { console.log(question); return(
-                <PresetQuery key={question} query={question}></PresetQuery>
-              )})
+              relates.map(( question ) => { 
+                //@ts-ignore
+                return <PresetQuery key={question} query={question}></PresetQuery>
+              })
             ) : (
               <div className="text-sm">No related questions.</div>
             )
