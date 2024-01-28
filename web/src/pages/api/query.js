@@ -6,8 +6,13 @@ export const config = {
 // pages/api/stream.js
 export default async function handler(req, res) {
   const query = req.body.query; // or however you get the query
+  console.log("req = ", req)
+  console.log("req.body.query = ", req.body.query)
+  console.log("req.query.query = ", req.query.query)
   const apiKey = process.env.SCIPHI_API_KEY; // Accessing the environment variable
 
+  
+  console.log('query = ', query)
   const externalApiResponse = await fetch(`https://api.sciphi.ai/query`, {
     method: "POST",
     headers: {
@@ -15,13 +20,13 @@ export default async function handler(req, res) {
       'Authorization': `Bearer ${apiKey}`, // Use an environment variable here
       Accept: "text/event-stream"
     },
-    body: JSON.stringify({ query })
+    body: JSON.stringify({ 'query':"test" })
   });
 
-  if (externalApiResponse.status !== 200) {
-    res.status(externalApiResponse.status).json({ error: 'Error fetching data' });
-    return;
-  }
+  // if (externalApiResponse.status !== 200) {
+  //   res.status(externalApiResponse.status).json({ error: 'Error fetching data' });
+  //   return;
+  // }
 
   const readableStream = externalApiResponse.body;
   const decoder = new TextDecoder();
