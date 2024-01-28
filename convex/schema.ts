@@ -16,6 +16,6 @@ export default defineSchema({
   .index("by_query", ["query"])
   .vectorIndex("by_query_embedding", {
     vectorField: "query_embedding",
-    dimensions: 768,
+    dimensions: 1536,
   })
 });
