@@ -25,7 +25,7 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
     (async () => {
       if (query) {
         const similar = await similarSearch({ query });
-        if (similar?._score > 0.95) {
+        if (similar?._score > 0.97) {
           setSearchId(similar._id);
         } else {
           const searchId = await search({ query });
