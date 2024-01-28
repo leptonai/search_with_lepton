@@ -12,7 +12,7 @@ const SourceItem: FC<{ source: Source; index: number }> = ({
   const domain = new URL(url).hostname;
   return (
     <div
-      className="relative text-xs py-3 px-3 bg-zinc-300 hover:bg-zinc-200 rounded-lg flex flex-col gap-2"
+      className="relative text-xs py-3 px-3 bg-zinc-400 hover:bg-zinc-300 rounded-lg flex flex-col gap-2"
       key={id}
     >
       <a href={url} target="_blank" className="absolute inset-0"></a>
