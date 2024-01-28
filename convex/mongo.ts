@@ -60,12 +60,18 @@ export const similarSearches = action({
                     "numCandidates": 50,
                     "limit": 1,
                 }
+            },
+            {
+                "$project": {
+                    "searchId": 1,
+                    "score": { "$meta": "vectorSearchScore" }
+                }
             }
         ])
 
         const doc = await results.next();
-        console.log("score", doc)
-        if (doc?.search_score > 0.90) {
+        console.log("score", doc?.score)
+        if (doc?.score > 0.90) {
             console.log("cache hit");
             return doc?.searchId as string;
         }
