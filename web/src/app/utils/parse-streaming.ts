@@ -24,11 +24,10 @@ export const parseStreaming = async (
   onError?: (status: number) => void,
 ) => {
   console.log("Calling parse streaming...")
-  const response = await fetch(`https://api.sciphi.ai/query`, {
+  const response = await fetch(`/api/query`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      'Authorization': `Bearer 765404bc9e5872e5f5ce36e89f70e729`,
       Accept: "text/event-stream"
     },
     body: JSON.stringify({
