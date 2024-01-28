@@ -64,8 +64,8 @@ export const similarSearches = action({
         ])
 
         const doc = await results.next();
-        if (doc) {
-            return doc;
+        if (doc?.search_score > 0.97) {
+            return doc?.searchId as string;
         }
     },
 });
