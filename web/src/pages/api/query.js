@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   // }
 
   const readableStream = externalApiResponse.body;
-  const decoder = new TextDecoder();
+  // const decoder = new TextDecoder();
 
   const readable = new ReadableStream({
     async start(controller) {
@@ -38,10 +38,10 @@ export default async function handler(req, res) {
 
         // Process and decode data
         // Replace this with your actual data processing logic
-        const processedText = decoder.decode(value, { stream: true });
+        // const processedText = decoder.decode(value, { stream: true });
         
         // Stream the processed text to the client
-        controller.enqueue(processedText);
+        controller.enqueue(value);
       }
 
       controller.close();

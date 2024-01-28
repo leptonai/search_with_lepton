@@ -41,30 +41,19 @@ export const parseStreaming = async (
 
   const reader = response.body.getReader();
   let decoder = new TextDecoder();
-  let uint8Array = new Uint8Array();
   let chunks = '';
   let chunkReply = false;
   while (true) {
-    // const { done, value } = await reader.read();
-    // if (done) {
-    //   break;
-    // }
-
-    // uint8Array = new Uint8Array([...uint8Array, ...value]);
     const { value, done } = await reader.read();
     if (done) break;
 
     const chunk = decoder.decode(value);
     console.log('chunk = ', chunk)
 
-    chunks += chunk; //decoder.decode(uint8Array, { stream: true });
+    chunks += chunk;
     let sink = '';
     let iC = 0;
     const lines = chunks.split('\n');
-    // if (lines) {
-    //   //@ts-ignore
-    //   chunks = lines.pop(); // Keep any incomplete line for the next iteration
-    // }
     for (const line of lines) {
       console.log('line = ', line)
       if (line.startsWith('data:')) {
