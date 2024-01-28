@@ -6,20 +6,47 @@ import OpenAI from "openai";
 import { Serper } from "serper";
 import { api, internal } from "./_generated/api";
 
+function createOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    throw new Error("Add your OPENAI_API_KEY as an env variable");
+  }
+
+  const baseURL = process.env.OPENAI_BASE_URL
+
+  return new OpenAI({
+    apiKey,
+    baseURL,
+  });
+}
+
+function getOpenAIChatModel() {
+  const model = process.env.OPENAI_CHAT_MODEL || "gpt-3.5-turbo"
+  return model
+}
+
+function getOpenAIEmbeddingModel() {
+  const model = process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-small"
+  return model
+}
+
+function createSerperClient() {
+  const apiKey = process.env.SERPER_API_KEY;
+  if (!apiKey) {
+    throw new Error("Add your SERPER_API_KEY as an env variable");
+  }
+
+  return new Serper({
+    apiKey,
+  });
+}
+
 export const relatedQuestion = internalAction({
   args: {
     searchId: v.id("searches")
   },
   handler: async (ctx, args) => {
-    const openApiKey = process.env.TOGETHER_API_KEY
-    if (!openApiKey) {
-      throw new Error("Add your TOGETHER_API_KEY as an env variable");
-    }
-
-    const openai = new OpenAI({
-      apiKey: openApiKey,
-      baseURL: "https://api.together.xyz/v1",
-    });
+    const openai = createOpenAIClient();
 
     const search = await ctx.runQuery(api.searches.read, { id: args.searchId });
     if (!search) {
@@ -27,7 +54,7 @@ export const relatedQuestion = internalAction({
     }
 
     const resp = await openai.chat.completions.create({
-      model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
+      model: getOpenAIChatModel(),
       messages: [
         {
           "role": "system",
@@ -106,24 +133,8 @@ export const rag = internalAction({
     query: v.string()
   },
   handler: async (ctx, args) => {
-    const serperApiKey = process.env.SERPER_API_KEY;
-    if (!serperApiKey) {
-      throw new Error("Add your SERPER_API_KEY as an env variable");
-    }
-
-    const serper = new Serper({
-      apiKey: serperApiKey
-    });
-
-    const openApiKey = process.env.TOGETHER_API_KEY
-    if (!openApiKey) {
-      throw new Error("Add your TOGETHER_API_KEY as an env variable");
-    }
-
-    const openai = new OpenAI({
-      apiKey: openApiKey,
-      baseURL: "https://api.together.xyz/v1",
-    });
+    const serper = createSerperClient();
+    const openai = createOpenAIClient();
 
     const resp = await serper.search(args.query)
     const sources: Array<Source> = [];
@@ -145,7 +156,7 @@ export const rag = internalAction({
     });
 
     const openaiResponse = await openai.chat.completions.create({
-      model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
+      model: getOpenAIChatModel(),
       messages: [
         {
           role: "system",
@@ -210,19 +221,11 @@ export const computeQueryEmbedding = internalAction({
       return;
     }
 
-    const openApiKey = process.env.TOGETHER_API_KEY
-    if (!openApiKey) {
-      throw new Error("Add your TOGETHER_API_KEY as an env variable");
-    }
-
-    const openai = new OpenAI({
-      apiKey: openApiKey,
-      baseURL: "https://api.together.xyz/v1",
-    });
+    const openai = createOpenAIClient();
 
     const resp = await openai.embeddings.create({
       input: search.query,
-      model: "togethercomputer/m2-bert-80M-32k-retrieval"
+      model: getOpenAIEmbeddingModel()
     });
 
     const embedding = resp.data[0].embedding;
@@ -234,32 +237,23 @@ export const computeQueryEmbedding = internalAction({
 });
 
 export const similarSearches = action({
-    args: {
-        query: v.string()
-    },
-    handler: async (ctx, args) => {
-        const openApiKey = process.env.TOGETHER_API_KEY
-        if (!openApiKey) {
-            throw new Error("Add your TOGETHER_API_KEY as an env variable");
-        }
+  args: {
+    query: v.string()
+  },
+  handler: async (ctx, args) => {
+    const openai = createOpenAIClient();
+    const resp = await openai.embeddings.create({
+      input: args.query,
+      model: getOpenAIEmbeddingModel()
+    });
 
-        const openai = new OpenAI({
-            apiKey: openApiKey,
-            baseURL: "https://api.together.xyz/v1",
-        });
+    const embedding = resp.data[0].embedding;
 
-        const resp = await openai.embeddings.create({
-            input: args.query,
-            model: "togethercomputer/m2-bert-80M-32k-retrieval"
-        });
+    const results = await ctx.vectorSearch("searches", "by_query_embedding", {
+      vector: embedding,
+      limit: 1,
+    });
 
-        const embedding = resp.data[0].embedding;
-
-        const results = await ctx.vectorSearch("searches", "by_query_embedding", {
-            vector: embedding,
-            limit: 1,
-        });
-
-        return results[0];
-    },
+    return results[0];
+  },
 });
