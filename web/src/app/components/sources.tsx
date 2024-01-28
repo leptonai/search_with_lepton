@@ -9,7 +9,6 @@ const SourceItem: FC<{ source: Source; index: number }> = ({
   index,
 }) => {
   const { id, name, url } = source;
-  console.log("source = ", source)
   const domain = new URL(url).hostname;
   return (
     <div
