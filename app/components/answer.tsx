@@ -22,7 +22,7 @@ export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
         </>
       }
       content={
-        markdown ? (
+        (markdown) ? (
           <div className="prose prose-sm max-w-full">
             <Markdown
               components={{

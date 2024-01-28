@@ -46,8 +46,8 @@ export const Sources: FC<{ sources: Source[] }> = ({ sources }) => {
         </>
       }
       content={
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {sources.length > 0 ? (
+        <div className="flex flex-col gap-2 w-5/6">
+          {(sources.length > 0) ? (
             sources.map((item, index) => (
               <SourceItem
                 key={item.id}
@@ -57,10 +57,10 @@ export const Sources: FC<{ sources: Source[] }> = ({ sources }) => {
             ))
           ) : (
             <>
-              <Skeleton className="max-w-sm h-16 bg-zinc-200/80"></Skeleton>
-              <Skeleton className="max-w-sm h-16 bg-zinc-200/80"></Skeleton>
-              <Skeleton className="max-w-sm h-16 bg-zinc-200/80"></Skeleton>
-              <Skeleton className="max-w-sm h-16 bg-zinc-200/80"></Skeleton>
+              <Skeleton className="w-full h-16 bg-zinc-200/80"></Skeleton>
+              <Skeleton className="w-full h-16 bg-zinc-200/80"></Skeleton>
+              <Skeleton className="w-full h-16 bg-zinc-200/80"></Skeleton>
+              <Skeleton className="w-full h-16 bg-zinc-200/80"></Skeleton>
             </>
           )}
         </div>

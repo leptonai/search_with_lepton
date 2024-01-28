@@ -15,10 +15,10 @@ export const Relates: FC<{ relates: Relate[] | null }> = ({ relates }) => {
       }
       content={
         <div className="flex gap-2 flex-col">
-          {relates !== null ? (
+          {(relates !== null) ? (
             relates.length > 0 ? (
               relates.map(({ question }) => (
-                <PresetQuery key={question} query={question}></PresetQuery>
+                <div><PresetQuery key={question} query={question}></PresetQuery></div>
               ))
             ) : (
               <div className="text-sm">No related questions.</div>
