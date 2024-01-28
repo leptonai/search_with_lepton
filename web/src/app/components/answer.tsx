@@ -12,7 +12,11 @@ import { FC } from "react";
 import Markdown from "react-markdown";
 
 function formatMarkdownNewLines(markdown: string) {
-  return markdown.split('\\n').join('  \n').replace(/\[(\d+)]/g, '[$1]($1)').split(`"queries":`)[0].slice(2,-3);
+  return markdown.split('\\n').join('  \n').replace(/\[(\d+)]/g, '[$1]($1)').split(`"queries":`)[0].slice(2,-3).replace(/\\u[\dA-F]{4}/gi, (match: str) => {
+    return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+  });
+
+  // return ;
 }
 
 
