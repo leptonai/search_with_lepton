@@ -10,6 +10,12 @@ export default defineSchema({
       url: v.string(),
       snippet: v.string(),
     })),
-    relates: v.array(v.string())
-  }).index("by_query", ["query"])
+    relates: v.array(v.string()),
+    query_embedding: v.optional(v.array(v.float64()))
+  })
+  .index("by_query", ["query"])
+  .vectorIndex("by_query_embedding", {
+    vectorField: "query_embedding",
+    dimensions: 768,
+  })
 });

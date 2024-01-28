@@ -1,5 +1,5 @@
 import { internal } from "./_generated/api";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const createSearch = mutation({
@@ -52,7 +52,17 @@ export const updateRelates = internalMutation({
         relates: v.array(v.string())
     },
     handler: async (ctx, args) => {
-        await ctx.db.patch(args.id, { relates: args.relates});
+        await ctx.db.patch(args.id, { relates: args.relates });
+    }
+})
+
+export const updateQueryEmbedding = internalMutation({
+    args: {
+        id: v.id("searches"),
+        embedding: v.array(v.float64())
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.id, { query_embedding: args.embedding });
     }
 })
 
@@ -66,5 +76,21 @@ export const read = query({
         } else {
             return undefined
         }
+    }
+})
+
+export const getSearchesWithoutQueryEmbeddings = internalQuery({
+    args: { count: v.number() },
+    handler: async (ctx, args) => {
+        return await ctx.db.query("searches").filter(q => q.eq(q.field("query_embedding"), undefined)).take(args.count);
+    },
+})
+
+export const computeQueryEmbeddingForTenItems = internalAction({
+    args: {},
+    handler: async (ctx, args) => {
+        const searches = await ctx.runQuery(internal.searches.getSearchesWithoutQueryEmbeddings, { count: 10 });
+        const actions = searches.map(x => ctx.runAction(internal.llm.computeQueryEmbedding, { searchId: x._id }))
+        await Promise.all(actions);
     }
 })

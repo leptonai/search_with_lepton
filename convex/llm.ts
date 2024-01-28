@@ -201,3 +201,34 @@ function buildSystemPrompt(context: Array<Source>): string {
 
   return RAG_QUERY_TEXT.replace("{context}", lines.join("\n\n"));
 }
+
+export const computeQueryEmbedding = internalAction({
+  args: { searchId: v.id("searches") },
+  handler: async (ctx, args) => {
+    const search = await ctx.runQuery(api.searches.read, { id: args.searchId });
+    if (!search) {
+      return;
+    }
+
+    const openApiKey = process.env.TOGETHER_API_KEY
+    if (!openApiKey) {
+      throw new Error("Add your TOGETHER_API_KEY as an env variable");
+    }
+
+    const openai = new OpenAI({
+      apiKey: openApiKey,
+      baseURL: "https://api.together.xyz/v1",
+    });
+
+    const resp = await openai.embeddings.create({
+      input: search.query,
+      model: "togethercomputer/m2-bert-80M-32k-retrieval"
+    });
+
+    const embedding = resp.data[0].embedding;
+    await ctx.runMutation(internal.searches.updateQueryEmbedding, {
+      id: args.searchId,
+      embedding,
+    })
+  },
+});
