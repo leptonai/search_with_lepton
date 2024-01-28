@@ -48,14 +48,12 @@ export const parseStreaming = async (
     if (done) break;
 
     const chunk = decoder.decode(value);
-    console.log('chunk = ', chunk)
 
     chunks += chunk;
     let sink = '';
     let iC = 0;
     const lines = chunks.split('\n');
     for (const line of lines) {
-      console.log('line = ', line)
       if (line.startsWith('data:')) {
         const data = line.substring(5).trim();
         sink += line.replace('data: ', '').slice(0, -1);
