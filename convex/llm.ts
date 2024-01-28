@@ -1,7 +1,7 @@
 "use node"
 
 import { v } from "convex/values";
-import { internalAction } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import OpenAI from "openai";
 import { Serper } from "serper";
 import { api, internal } from "./_generated/api";
@@ -231,4 +231,35 @@ export const computeQueryEmbedding = internalAction({
       embedding,
     })
   },
+});
+
+export const similarSearches = action({
+    args: {
+        query: v.string()
+    },
+    handler: async (ctx, args) => {
+        const openApiKey = process.env.TOGETHER_API_KEY
+        if (!openApiKey) {
+            throw new Error("Add your TOGETHER_API_KEY as an env variable");
+        }
+
+        const openai = new OpenAI({
+            apiKey: openApiKey,
+            baseURL: "https://api.together.xyz/v1",
+        });
+
+        const resp = await openai.embeddings.create({
+            input: args.query,
+            model: "togethercomputer/m2-bert-80M-32k-retrieval"
+        });
+
+        const embedding = resp.data[0].embedding;
+
+        const results = await ctx.vectorSearch("searches", "by_query_embedding", {
+            vector: embedding,
+            limit: 1,
+        });
+
+        return results[0];
+    },
 });

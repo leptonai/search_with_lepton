@@ -5,7 +5,7 @@ import { Sources } from "@/app/components/sources";
 import { Source } from "@/app/interfaces/source";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { Annoyed } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 
@@ -13,6 +13,7 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
   const [error, setError] = useState<number | null>(null);
 
   const [searchId, setSearchId] = useState<Id<"searches"> | undefined>(undefined)
+  const similarSearch = useAction(api.llm.similarSearches)
   const search = useMutation(api.searches.createSearch);
   const searchResponse = useQuery(api.searches.read, { id: searchId })
 
@@ -21,9 +22,17 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
   const relates = searchResponse?.relates.map(x => ({ question: x })) || null;
 
   useEffect(() => {
-    if (query) {
-      search({ query }).then(setSearchId);
-    }
+    (async () => {
+      if (query) {
+        const similar = await similarSearch({ query });
+        if (similar?._score > 0.95) {
+          setSearchId(similar._id);
+        } else {
+          const searchId = await search({ query });
+          setSearchId(searchId)
+        }
+      }
+    })()
   }, [query]);
   return (
     <div className="flex gap-12 w-screen">
