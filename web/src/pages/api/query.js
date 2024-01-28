@@ -20,7 +20,7 @@ export default async function handler(req, res) {
       'Authorization': `Bearer ${apiKey}`, // Use an environment variable here
       Accept: "text/event-stream"
     },
-    body: JSON.stringify({query })
+    body: JSON.stringify({ query })
   });
 
   // if (externalApiResponse.status !== 200) {
