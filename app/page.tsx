@@ -12,8 +12,9 @@ export default function Home() {
         <h1 className="text-4xl text-center">Bobtail.DEV</h1>
         <Search></Search>
         <div className="flex gap-2 flex-wrap justify-center">
-          <PresetQuery query="Can I use a MacBook Pro with less than 16GB of RAM for machine learning?"></PresetQuery>
+          <PresetQuery query="How to create a link with query params using React router?"></PresetQuery>
           <PresetQuery query="How to add a layer on top of HuggingFace model in PyTorch?"></PresetQuery>
+          <PresetQuery query="How does DPO work, how is it different with PPO?"></PresetQuery>
         </div>
         <Footer></Footer>
       </div>
