@@ -9,6 +9,8 @@ import { Source } from "@/app/interfaces/source";
 import { BookOpenText } from "lucide-react";
 import { FC } from "react";
 import Markdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { a11yDark as dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
   markdown,
@@ -91,8 +93,27 @@ export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
                     </span>
                   );
                 },
-              }}
-            >
+                pre: (props) => {
+                  return <div>{props.children}</div>
+                },
+                code: (props) => {
+                  const { children, className, node, ...rest } = props
+                  const match = /language-(\w+)/.exec(className || '')
+                  return match ? (
+                    <SyntaxHighlighter
+                      PreTag="div"
+                      CodeTag="div"
+                      children={String(children).replace(/\n$/, '')}
+                      language={match[1]}
+                      style={dark}
+                    />
+                  ) : (
+                    <code {...rest} className={className}>
+                      {children}
+                    </code>
+                  )
+                }
+              }}>
               {markdown}
             </Markdown>
           </div>

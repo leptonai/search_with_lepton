@@ -24,13 +24,18 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
   useEffect(() => {
     (async () => {
       if (query) {
-        const similar = await similarSearch({ query });
-        if (similar?._score > 0.97) {
-          setSearchId(similar._id);
-        } else {
-          const searchId = await search({ query });
-          setSearchId(searchId)
+        try {
+          const similar = await similarSearch({ query });
+          if (similar?._score > 0.97) {
+            setSearchId(similar._id);
+            return;
+          }
+        } catch (err) {
+          console.warn(err)
         }
+
+        const searchId = await search({ query });
+        setSearchId(searchId)
       }
     })()
   }, [query]);
