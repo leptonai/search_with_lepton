@@ -27,16 +27,8 @@ export const parseStreaming = async (
     method: "GET",
     headers: {
       'Content-Type': 'application/json',
+      Accept: "text/event-stream"
     },
-    // body: JSON.stringify({ query: 'your-query-here' }),
-  
-    // headers: {
-    //   "Content-Type": "application/json",
-    //   // Accept: "text/event-stream"
-    // },
-    // body: JSON.stringify({
-    //   query,
-    // })
   });
 
   if (response.status !== 200) {
