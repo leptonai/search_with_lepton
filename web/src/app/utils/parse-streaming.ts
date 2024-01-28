@@ -1,8 +1,8 @@
 import { Relate } from "@/app/interfaces/relate";
 import { Source } from "@/app/interfaces/source";
 
-const LLM_SPLIT = "__LLM_RESPONSE__"; // Assuming this delimiter is still used
-const RELATED_SPLIT = "__RELATED_QUESTIONS__"; // Assuming this delimiter is still used
+const LLM_SPLIT = "__LLM_RESPONSE__"; // delimiter marking the start of the LLM response
+const RELATED_SPLIT = "__RELATED_QUESTIONS__"; // delimiter marking the end of the LLM response
 
 const markdownParse = (text: string) => {
     return text
@@ -66,7 +66,7 @@ export const parseStreaming = async (
         }
         // Handle data based on assumed format (adjust if needed)
         if (line.includes(LLM_SPLIT) && !chunkReply) {
-          onSources(JSON.parse(sink.replace(LLM_SPLIT,''))); // Assuming sources are JSON-formatted
+          onSources(JSON.parse(sink.replace(LLM_SPLIT,'')));
           chunkReply = true;
         } else if (sink.includes(`"queries"`) && sink.includes(RELATED_SPLIT)) {
           const [_, relates] = sink.split(`"queries":`);
