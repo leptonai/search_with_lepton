@@ -5,7 +5,9 @@ import { Title } from "@/app/components/title";
 import { useSearchParams } from "next/navigation";
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  //@ts-ignore
   const query = decodeURIComponent(searchParams.get("q") || "");
+  //@ts-ignore
   const rid = decodeURIComponent(searchParams.get("rid") || "");
   return (
     // <div className="absolute inset-0 bg-[url('/dist/bg.svg')]">
