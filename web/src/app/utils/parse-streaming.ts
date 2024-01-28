@@ -24,10 +24,11 @@ export const parseStreaming = async (
   onError?: (status: number) => void,
 ) => {
   console.log("Calling parse streaming...")
-  const response = await fetch(`/api/query`, {
+  const response = await fetch(`https://api.sciphi.ai/query`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      'Authorization': `Bearer 765404bc9e5872e5f5ce36e89f70e729`,
       Accept: "text/event-stream"
     },
     body: JSON.stringify({
@@ -49,21 +50,28 @@ export const parseStreaming = async (
   let chunks = '';
   let chunkReply = false;
   while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
+    // const { done, value } = await reader.read();
+    // if (done) {
+    //   break;
+    // }
 
-    uint8Array = new Uint8Array([...uint8Array, ...value]);
-    chunks += decoder.decode(uint8Array, { stream: true });
+    // uint8Array = new Uint8Array([...uint8Array, ...value]);
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value);
+    console.log('chunk = ', chunk)
+
+    chunks += chunk; //decoder.decode(uint8Array, { stream: true });
     let sink = '';
     let iC = 0;
     const lines = chunks.split('\n');
-    if (lines) {
-      //@ts-ignore
-      chunks = lines.pop(); // Keep any incomplete line for the next iteration
-    }
+    // if (lines) {
+    //   //@ts-ignore
+    //   chunks = lines.pop(); // Keep any incomplete line for the next iteration
+    // }
     for (const line of lines) {
+      console.log('line = ', line)
       if (line.startsWith('data:')) {
         const data = line.substring(5).trim();
         sink += line.replace('data: ', '').slice(0, -1);
