@@ -32,7 +32,7 @@ export const Search: FC = () => {
         />
         <button
           type="submit"
-          className="w-auto py-1 px-2 bg-zinc-400 border-black text-black fill-white active:scale-95 border overflow-hidden relative rounded-xl"
+          className="w-auto py-1 px-2 bg-zinc-400 border-black text-black fill-white active:scale-95 border overflow-hidden relative rounded-xl hover:bg-zinc-200"
         >
           <ArrowRight size={16} />
         </button>

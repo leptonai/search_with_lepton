@@ -11,5 +11,7 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #cbd5e1 !important; /* Your desired text color */
   -webkit-background-clip: text;
+  background-color: #1f2937 !important; /* Your desired background color */
 }

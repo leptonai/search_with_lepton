@@ -29,7 +29,7 @@ export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
       }
       content={
         markdown ? (
-          <div className="prose prose-sm max-w-full">
+          <div className="prose prose-sm max-w-full text-zinc-300">
             <Markdown
               components={{
                 a: ({ node: _, ...props }) => {
@@ -42,16 +42,16 @@ export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
                         <PopoverTrigger asChild>
                           <span
                             title={source.name}
-                            className="inline-block cursor-pointer transform scale-[60%] no-underline font-medium bg-zinc-300 hover:bg-zinc-400 w-6 text-center h-6 rounded-full origin-top-left"
+                            className="inline-block cursor-pointer transform scale-[60%] no-underline font-medium bg-zinc-700 hover:bg-zinc-500 w-6 text-center h-6 rounded-full origin-top-left"
                           >
                             {props.href}
                           </span>
                         </PopoverTrigger>
                         <PopoverContent
                           align={"start"}
-                          className="max-w-screen-md flex flex-col gap-2 bg-white shadow-transparent ring-zinc-50 ring-4 text-xs"
+                          className="max-w-screen-md flex flex-col gap-2 bg-zinc-800 shadow-transparent ring-zinc-600 border-zinc-600 ring-4 text-xs"
                         >
-                          <div className="text-ellipsis overflow-hidden whitespace-nowrap font-medium">
+                          <div className="text-zinc-200 text-ellipsis overflow-hidden whitespace-nowrap font-medium">
                             {source.name}
                           </div>
                           <div className="flex gap-4">
@@ -66,7 +66,7 @@ export const Answer: FC<{ markdown: string; sources: Source[] }> = ({
                               </div>
                             )}
                             <div className="flex-1">
-                              <div className="line-clamp-4 text-zinc-500 break-words">
+                              <div className="line-clamp-4 text-white break-words">
                                 {source.snippet}
                               </div>
                             </div>

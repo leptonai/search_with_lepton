@@ -12,7 +12,7 @@ const SourceItem: FC<{ source: Source; index: number }> = ({
   const domain = new URL(url).hostname;
   return (
     <div
-      className="relative text-xs py-3 px-3 bg-zinc-100 hover:bg-zinc-200 rounded-lg flex flex-col gap-2"
+      className="relative text-xs py-3 px-3 bg-zinc-300 hover:bg-zinc-200 rounded-lg flex flex-col gap-2"
       key={id}
     >
       <a href={url} target="_blank" className="absolute inset-0"></a>
@@ -21,7 +21,7 @@ const SourceItem: FC<{ source: Source; index: number }> = ({
       </div>
       <div className="flex gap-2 items-center">
         <div className="flex-1 overflow-hidden">
-          <div className="text-ellipsis whitespace-nowrap break-all text-zinc-400 overflow-hidden w-full">
+          <div className="text-ellipsis whitespace-nowrap break-all text-zinc-600 overflow-hidden w-full">
             {index + 1} - {domain}
           </div>
         </div>
