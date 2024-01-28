@@ -1,15 +1,17 @@
 "use client";
+
 import { Result } from "@/app/components/result";
 import { Search } from "@/app/components/search";
 import { Title } from "@/app/components/title";
 import { useSearchParams } from "next/navigation";
+
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const query = decodeURIComponent(searchParams.get("q") || "");
   const rid = decodeURIComponent(searchParams.get("rid") || "");
   return (
-    <div className="bg-[url('/ui/bg.svg')]">
-      <div className="">
+    <div>
+      <div>
         <div className="pointer-events-none w-full backdrop-filter"></div>
         <div className="px-4 md:px-8 pt-6 pb-24 h-full">
           <Title query={query}></Title>
