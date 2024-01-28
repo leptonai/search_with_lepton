@@ -23,14 +23,12 @@ export const parseStreaming = async (
   onRelates: (value: Relate[]) => void,
   onError?: (status: number) => void,
 ) => {
-  console.log("Calling parse streaming...")
-  console.log("query = ", query)
-  const response = await fetch(`/api/query`, {
-    method: "POST",
+  const response = await fetch(`/api/query?query=${query}`, {
+    method: "GET",
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ query: 'your-query-here' }),
+    // body: JSON.stringify({ query: 'your-query-here' }),
   
     // headers: {
     //   "Content-Type": "application/json",
