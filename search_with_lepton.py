@@ -169,15 +169,33 @@ def search_with_serper(query: str, subscription_key: str):
     json_content = response.json()
     try:
         # convert to the same format as bing/google
-        contexts = [
-            {"name": c["title"], "url": c["link"], "snippet": c["snippet"]}
-            for c in json_content["organic"][:REFERENCE_COUNT]
+        contexts = []
+        if json_content.get("knowledgeGraph"):
+            url = json_content["knowledgeGraph"].get("descriptionUrl") or json_content["knowledgeGraph"].get("website")
+            snippet = json_content["knowledgeGraph"].get("description")
+            if url and snippet:
+                contexts.append({
+                    "name": json_content["knowledgeGraph"].get("title",""),
+                    "url": url,
+                    "snippet": snippet
+                })
+        if json_content.get("answerBox"):
+            url = json_content["answerBox"].get("url")
+            snippet = json_content["answerBox"].get("snippet") or json_content["answerBox"].get("answer")
+            if url and snippet:
+                contexts.append({
+                    "name": json_content["answerBox"].get("title",""),
+                    "url": url,
+                    "snippet": snippet
+                })
+        contexts += [
+            {"name": c["title"], "url": c["link"], "snippet": c.get("snippet","")}
+            for c in json_content["organic"]
         ]
+        return contexts[:REFERENCE_COUNT]
     except KeyError:
         logger.error(f"Error encountered: {json_content}")
         return []
-    return contexts
-
 
 class RAG(Photon):
     """
@@ -299,7 +317,7 @@ class RAG(Photon):
                 self.search_api_key,
             )
         else:
-            raise RuntimeError("Backend must be LEPTON, BING or GOOGLE.")
+            raise RuntimeError("Backend must be LEPTON, BING, GOOGLE or SERPER.")
         self.model = os.environ["LLM_MODEL"]
         # An executor to carry out async tasks, such as uploading to KV.
         self.executor = concurrent.futures.ThreadPoolExecutor(
