@@ -4,7 +4,7 @@ Build your own conversational search engine using less than 500 lines of code.
 <br/>
 <a href="https://search.lepton.run/" target="_blank"> Live Demo </a>
 <br/>
-<img width="645" src="https://github.com/leptonai/search_with_lepton/assets/1506722/845d7057-02cd-404e-bbc7-60f4bae89680" height="500">
+<img width="70%" src="https://github.com/leptonai/search_with_lepton/assets/1506722/845d7057-02cd-404e-bbc7-60f4bae89680">
 </div>
 
 
