@@ -4,15 +4,33 @@ import { Relates } from "@/app/components/relates";
 import { Sources } from "@/app/components/sources";
 import { Relate } from "@/app/interfaces/relate";
 import { Source } from "@/app/interfaces/source";
+import { LocalHistory } from "@/app/interfaces/history";
 import { parseStreaming } from "@/app/utils/parse-streaming";
 import { Annoyed } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
+import { historyQueryKey } from "@/app/utils/local-storage";
 
 export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
   const [sources, setSources] = useState<Source[]>([]);
   const [markdown, setMarkdown] = useState<string>("");
   const [relates, setRelates] = useState<Relate[] | null>(null);
   const [error, setError] = useState<number | null>(null);
+  const handleFinish = useCallback(
+    (result: LocalHistory) => {
+      const localHistory = window.localStorage.getItem(historyQueryKey);
+      let history: LocalHistory[];
+      try {
+        history = JSON.parse(localHistory || "[]");
+      } catch {
+        history = [];
+      }
+      window.localStorage.setItem(
+        historyQueryKey,
+        JSON.stringify([result, ...history]),
+      );
+    },
+    [rid, query],
+  );
   useEffect(() => {
     const controller = new AbortController();
     void parseStreaming(
@@ -22,6 +40,7 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
       setSources,
       setMarkdown,
       setRelates,
+      handleFinish,
       setError,
     );
     return () => {

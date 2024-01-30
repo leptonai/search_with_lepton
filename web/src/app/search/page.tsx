@@ -3,6 +3,7 @@ import { Result } from "@/app/components/result";
 import { Search } from "@/app/components/search";
 import { Title } from "@/app/components/title";
 import { useSearchParams } from "next/navigation";
+import { HistoryResult } from "@/app/components/history";
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const query = decodeURIComponent(searchParams.get("q") || "");
@@ -14,6 +15,7 @@ export default function SearchPage() {
         <div className="px-4 md:px-8 pt-6 pb-24 rounded-2xl ring-8 ring-zinc-300/20 border border-zinc-200 h-full overflow-auto">
           <Title query={query}></Title>
           <Result key={rid} query={query} rid={rid}></Result>
+          <HistoryResult />
         </div>
         <div className="h-80 pointer-events-none w-full rounded-b-2xl backdrop-filter absolute bottom-0 bg-gradient-to-b from-transparent to-white [mask-image:linear-gradient(to_top,white,transparent)]"></div>
         <div className="absolute z-10 flex items-center justify-center bottom-6 px-4 md:px-8 w-full">
