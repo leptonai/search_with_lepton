@@ -13,7 +13,7 @@ export default function Home() {
         <Search></Search>
         <div className="flex gap-2 flex-wrap justify-center">
           <PresetQuery query="Who said live long and prosper?"></PresetQuery>
-          <PresetQuery query="Why do we only see one side of the moon?"></PresetQuery>
+          <PresetQuery query="What is the Higgs Boson and why should I care?"></PresetQuery>
         </div>
         <Footer></Footer>
       </div>
