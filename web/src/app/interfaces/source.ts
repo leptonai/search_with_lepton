@@ -1,7 +1,7 @@
 export interface Source {
-  id: string;
-  name: string;
-  url: string;
+  title: string;
+  snippet: string;
+  link: string;
   isFamilyFriendly: boolean;
   displayUrl: string;
   snippet: string;

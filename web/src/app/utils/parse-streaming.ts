@@ -1,8 +1,11 @@
 import { Relate } from "@/app/interfaces/relate";
 import { Source } from "@/app/interfaces/source";
 
-const LLM_SPLIT = "__LLM_RESPONSE__"; // delimiter marking the start of the LLM response
-const RELATED_SPLIT = "__RELATED_QUESTIONS__"; // delimiter marking the end of the LLM response
+const SEARCH_START = "<search>";
+const SEARCH_END = "</search>";
+
+const LLM_START = "<completion>";
+const LLM_END = "</completion>";
 
 const markdownParse = (text: string) => {
     return text
@@ -17,12 +20,11 @@ const markdownParse = (text: string) => {
 export const parseStreaming = async (
   controller: AbortController,
   query: string,
-  search_uuid: string,
-  onSources: (value: Source[]) => void,
+  onSources: (value: string) => void,
   onMarkdown: (value: string) => void,
-  onRelates: (value: Relate[]) => void,
   onError?: (status: number) => void,
 ) => {
+
   const response = await fetch(`/api/query?query=${query}`, {
     method: "GET",
     headers: {
@@ -41,39 +43,31 @@ export const parseStreaming = async (
 
   const reader = response.body.getReader();
   let decoder = new TextDecoder();
-  let chunks = '';
-  let chunkReply = false;
+  let sink = '';
+
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
-
     const chunk = decoder.decode(value);
+    sink += chunk;
 
-    chunks += chunk;
-    let sink = '';
-    let iC = 0;
-    const lines = chunks.split('\n');
-    for (const line of lines) {
-      if (line.startsWith('data:')) {
-        const data = line.substring(5).trim();
-        sink += line.replace('data: ', '').slice(0, -1);
-        iC += 1
-        if (chunkReply && iC%5==0) {
-          let md = sink.split(LLM_SPLIT)[1]
-          onMarkdown(markdownParse(md));
-        }
-        // Handle data based on assumed format (adjust if needed)
-        if (line.includes(LLM_SPLIT) && !chunkReply) {
-          onSources(JSON.parse(sink.replace(LLM_SPLIT,'')));
-          chunkReply = true;
-        } else if (sink.includes(`"queries"`) && sink.includes(RELATED_SPLIT)) {
-          const [_, relates] = sink.split(`"queries":`);
-          let relatesCleaned = relates.split(RELATED_SPLIT)[0].slice(0,-1).trim()//#.strip()
-          onRelates(JSON.parse(relatesCleaned));
-        } else {
-          // Handle other event types
-        }
+    if (sink.includes(SEARCH_END)) {
+      let results = sink.split(SEARCH_END)[0].replace(SEARCH_START, "");
+      onSources(results)
+    }
+
+    if (true) {
+      let md = sink.split(LLM_START)[1]
+      if (md !== undefined) {
+        md = md.replace(LLM_END, "")
+        onMarkdown(markdownParse(md));
       }
     }
   }
+  let md = sink.split(LLM_START)[1]
+  if (md !== undefined) {
+    md = md.replace(LLM_END, "")
+    onMarkdown(markdownParse(md));
+  }
+
 };

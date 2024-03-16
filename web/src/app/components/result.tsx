@@ -9,19 +9,16 @@ import { Annoyed } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 
 export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
-  const [sources, setSources] = useState<Source[]>([]);
+  const [sources, setSources] = useState<string | null>(null);
   const [markdown, setMarkdown] = useState<string>("");
-  const [relates, setRelates] = useState<Relate[] | null>(null);
   const [error, setError] = useState<number | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     void parseStreaming(
       controller,
       query,
-      rid,
       setSources,
       setMarkdown,
-      setRelates,
       setError,
     );
     return () => {
@@ -31,10 +28,10 @@ export const Result: FC<{ query: string; rid: string }> = ({ query, rid }) => {
   return (
     <div className="flex flex-col gap-8">
       <Answer markdown={markdown} sources={sources}></Answer>
-      <Relates relates={relates}></Relates>
+      {/* <Relates relates={relates}></Relates> */}
       {error && (
         <div className="absolute inset-4 flex items-center justify-center bg-white/40 backdrop-blur-sm">
-          <div className="p-4 bg-white shadow-2xl rounded text-blue-500 font-medium flex gap-4">
+          <div className="p-4 bg-white shadow-2xl rounded text-blue-500 font-medium flex  gap-4">
             <Annoyed></Annoyed>
             {error === 429
               ? "Sorry, you have made too many requests recently, try again later."
