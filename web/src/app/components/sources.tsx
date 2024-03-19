@@ -8,7 +8,8 @@ const SourceItem: FC<{ source: Source; index: number }> = ({
   source,
   index,
 }) => {
-  const { id, name, url } = source;
+  const { name, url } = source;
+  const id = source.id || url;
   const domain = new URL(url).hostname;
   return (
     <div
@@ -50,7 +51,7 @@ export const Sources: FC<{ sources: Source[] }> = ({ sources }) => {
           {sources.length > 0 ? (
             sources.map((item, index) => (
               <SourceItem
-                key={item.id}
+                key={item.id || item.url}
                 index={index}
                 source={item}
               ></SourceItem>
