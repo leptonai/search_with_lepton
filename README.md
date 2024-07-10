@@ -30,8 +30,11 @@ You have three options for Google Search: you can use the [SearchApi Google Sear
 > Running the following commands to set up them automatically.
 
 ```shell
-pip install -U leptonai && lep login
+pip install -U leptonai openai && lep login
 ```
+
+## Obtain Your Lepton AI Workspace Token
+You can copy your workspace toke from the Lepton AI Dashboard &rarr; Settings &rarr; Tokens.
 
 
 ## Build
@@ -40,11 +43,15 @@ pip install -U leptonai && lep login
 ```shell
 export BING_SEARCH_V7_SUBSCRIPTION_KEY=YOUR_BING_SUBSCRIPTION_KEY
 ```
-2. Build web
+2. Set Lepton AI workspace token
+```shell
+export LEPTON_WORKSPACE_TOKEN=YOUR_LEPTON_WORKSPACE_TOKEN
+```
+3. Build web
 ```shell
 cd web && npm install && npm run build
 ```
-3. Run server
+4. Run server
 ```shell
 BACKEND=BING python search_with_lepton.py
 ```
