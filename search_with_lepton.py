@@ -18,19 +18,14 @@ from leptonai import Client
 from leptonai.kv import KV
 from leptonai.photon import Photon, StaticFiles
 from leptonai.photon.types import to_bool
-from leptonai.api.workspace import WorkspaceInfoLocalRecord
+from leptonai.api.v0.workspace import WorkspaceInfoLocalRecord
 from leptonai.util import tool
 
 ################################################################################
 # Constant values for the RAG model.
 ################################################################################
 
-# Search engine related. You don't really need to change this.
-BING_SEARCH_V7_ENDPOINT = "https://api.bing.microsoft.com/v7.0/search"
-BING_MKT = "en-US"
-GOOGLE_SEARCH_ENDPOINT = "https://customsearch.googleapis.com/customsearch/v1"
 SERPER_SEARCH_ENDPOINT = "https://google.serper.dev/search"
-SEARCHAPI_SEARCH_ENDPOINT = "https://www.searchapi.io/api/v1/search"
 
 # Specify the number of references from the search engine you want to use.
 # 8 is usually a good number.
@@ -38,28 +33,28 @@ REFERENCE_COUNT = 8
 
 # Specify the default timeout for the search engine. If the search engine
 # does not respond within this time, we will return an error.
-DEFAULT_SEARCH_ENGINE_TIMEOUT = 5
+DEFAULT_SEARCH_ENGINE_TIMEOUT = 10
 
 
 # If the user did not provide a query, we will use this default query.
-_default_query = "Who said 'live long and prosper'?"
+_default_query = "谁说过 '长久繁荣'?"
 
 # This is really the most important part of the rag model. It gives instructions
 # to the model on how to generate the answer. Of course, different models may
 # behave differently, and we haven't tuned the prompt to make it optimal - this
 # is left to you, application creators, as an open problem.
 _rag_query_text = """
-You are a large language AI assistant built by Lepton AI. You are given a user question, and please write clean, concise and accurate answer to the question. You will be given a set of related contexts to the question, each starting with a reference number like [[citation:x]], where x is a number. Please use the context and cite the context at the end of each sentence if applicable.
+您是由 Lepton AI 构建的大型语言 AI 助手。您将收到一个用户问题，请用清晰、简洁和准确的方式回答问题。您会得到一组与问题相关的上下文，每个上下文都以参考编号��头，如 [[citation:x]]，其中 x 是一个数字。请使用上下文并在适用的情况下在每个句子末尾引用上下文。
 
-Your answer must be correct, accurate and written by an expert using an unbiased and professional tone. Please limit to 1024 tokens. Do not give any information that is not related to the question, and do not repeat. Say "information is missing on" followed by the related topic, if the given context do not provide sufficient information.
+您的回答必须正确、准确，并以专家的身份使用公正和专业的语气撰写。请限制在 1024 个标记内。不要提供与问题无关的任何信息，也不要重复。如果给定的上下文没有提供足够的信息，请说"关于以下主题的信息缺失"，然后说明相关主题。
 
-Please cite the contexts with the reference numbers, in the format [citation:x]. If a sentence comes from multiple contexts, please list all applicable citations, like [citation:3][citation:5]. Other than code and specific names and citations, your answer must be written in the same language as the question.
+请使用参考编号引用上下文，格式为 [citation:x]。如果一个句子来自多个上下文，请列出所有适用的引用，如 [citation:3][citation:5]。除了代码和特定名称以及引用外，您的回答必须使用与问题相同的语言。
 
-Here are the set of contexts:
+以下是一组上下文：
 
 {context}
 
-Remember, don't blindly repeat the contexts verbatim. And here is the user question:
+请记住，不要盲目地逐字重复上下文。以下是用户问题：
 """
 
 # A set of stop words to use - this is not a complete set, and you may want to
@@ -84,63 +79,14 @@ stop_words = [
 # questions. This is not ideal, but it is a good tradeoff between response time
 # and quality.
 _more_questions_prompt = """
-You are a helpful assistant that helps the user to ask related questions, based on user's original question and the related contexts. Please identify worthwhile topics that can be follow-ups, and write questions no longer than 20 words each. Please make sure that specifics, like events, names, locations, are included in follow up questions so they can be asked standalone. For example, if the original question asks about "the Manhattan project", in the follow up question, do not just say "the project", but use the full name "the Manhattan project". Your related questions must be in the same language as the original question.
+您是一位有帮助的助手，根据用户的原始问题和相关上下文帮助用户提出相关问题。请识别值得追问的主题，并写出每个不超过 20 个字的问题。请确保具体细节，如事件、名称、地点，都包含在后续问题中，以便它们可以独立提出。例如，如果原始问题询问"曼哈顿计划"，在后续问题中不要只说"该项目"，而要使用全名"曼哈顿计划"。您的相关问题必须与原始问题使用相同的语言。
 
-Here are the contexts of the question:
+以下是问题的上下文：
 
 {context}
 
-Remember, based on the original question and related contexts, suggest three such further questions. Do NOT repeat the original question. Each related question should be no longer than 20 words. Here is the original question:
+请记住，根据原始问题和相关上下文，建议三个这样的进一步问题。不要重复原始问题。每个相关问题不应超过 20 个字。以下是原始问题：
 """
-
-
-def search_with_bing(query: str, subscription_key: str):
-    """
-    Search with bing and return the contexts.
-    """
-    params = {"q": query, "mkt": BING_MKT}
-    response = requests.get(
-        BING_SEARCH_V7_ENDPOINT,
-        headers={"Ocp-Apim-Subscription-Key": subscription_key},
-        params=params,
-        timeout=DEFAULT_SEARCH_ENGINE_TIMEOUT,
-    )
-    if not response.ok:
-        logger.error(f"{response.status_code} {response.text}")
-        raise HTTPException(response.status_code, "Search engine error.")
-    json_content = response.json()
-    try:
-        contexts = json_content["webPages"]["value"][:REFERENCE_COUNT]
-    except KeyError:
-        logger.error(f"Error encountered: {json_content}")
-        return []
-    return contexts
-
-
-def search_with_google(query: str, subscription_key: str, cx: str):
-    """
-    Search with google and return the contexts.
-    """
-    params = {
-        "key": subscription_key,
-        "cx": cx,
-        "q": query,
-        "num": REFERENCE_COUNT,
-    }
-    response = requests.get(
-        GOOGLE_SEARCH_ENDPOINT, params=params, timeout=DEFAULT_SEARCH_ENGINE_TIMEOUT
-    )
-    if not response.ok:
-        logger.error(f"{response.status_code} {response.text}")
-        raise HTTPException(response.status_code, "Search engine error.")
-    json_content = response.json()
-    try:
-        contexts = json_content["items"][:REFERENCE_COUNT]
-    except KeyError:
-        logger.error(f"Error encountered: {json_content}")
-        return []
-    return contexts
-
 
 def search_with_serper(query: str, subscription_key: str):
     """
@@ -166,7 +112,7 @@ def search_with_serper(query: str, subscription_key: str):
     )
     if not response.ok:
         logger.error(f"{response.status_code} {response.text}")
-        raise HTTPException(response.status_code, "Search engine error.")
+        raise HTTPException(response.status_code, "搜索引擎错误。")
     json_content = response.json()
     try:
         # convert to the same format as bing/google
@@ -195,97 +141,7 @@ def search_with_serper(query: str, subscription_key: str):
         ]
         return contexts[:REFERENCE_COUNT]
     except KeyError:
-        logger.error(f"Error encountered: {json_content}")
-        return []
-
-def search_with_searchapi(query: str, subscription_key: str):
-    """
-    Search with SearchApi.io and return the contexts.
-    """
-    payload = {
-        "q": query,
-        "engine": "google",
-        "num": (
-            REFERENCE_COUNT
-            if REFERENCE_COUNT % 10 == 0
-            else (REFERENCE_COUNT // 10 + 1) * 10
-        ),
-    }
-    headers = {"Authorization": f"Bearer {subscription_key}", "Content-Type": "application/json"}
-    logger.info(
-        f"{payload} {headers} {subscription_key} {query} {SEARCHAPI_SEARCH_ENDPOINT}"
-    )
-    response = requests.get(
-        SEARCHAPI_SEARCH_ENDPOINT,
-        headers=headers,
-        params=payload,
-        timeout=30,
-    )
-    if not response.ok:
-        logger.error(f"{response.status_code} {response.text}")
-        raise HTTPException(response.status_code, "Search engine error.")
-    json_content = response.json()
-    try:
-        # convert to the same format as bing/google
-        contexts = []
-
-        if json_content.get("answer_box"):
-            if json_content["answer_box"].get("organic_result"):
-                title = json_content["answer_box"].get("organic_result").get("title", "")
-                url = json_content["answer_box"].get("organic_result").get("link", "")
-            if json_content["answer_box"].get("type") == "population_graph":
-                title = json_content["answer_box"].get("place", "")
-                url = json_content["answer_box"].get("explore_more_link", "")
-
-            title = json_content["answer_box"].get("title", "")
-            url = json_content["answer_box"].get("link")
-            snippet =  json_content["answer_box"].get("answer") or json_content["answer_box"].get("snippet")
-
-            if url and snippet:
-                contexts.append({
-                    "name": title,
-                    "url": url,
-                    "snippet": snippet
-                })
-
-        if json_content.get("knowledge_graph"):
-            if json_content["knowledge_graph"].get("source"):
-                url = json_content["knowledge_graph"].get("source").get("link", "")
-
-            url = json_content["knowledge_graph"].get("website", "")
-            snippet = json_content["knowledge_graph"].get("description")
-
-            if url and snippet:
-                contexts.append({
-                    "name": json_content["knowledge_graph"].get("title", ""),
-                    "url": url,
-                    "snippet": snippet
-                })
-
-        contexts += [
-            {"name": c["title"], "url": c["link"], "snippet": c.get("snippet", "")}
-            for c in json_content["organic_results"]
-        ]
-        
-        if json_content.get("related_questions"):
-            for question in json_content["related_questions"]:
-                if question.get("source"):
-                    url = question.get("source").get("link", "")
-                else:
-                    url = ""  
-                    
-                snippet = question.get("answer", "")
-
-                if url and snippet:
-                    contexts.append({
-                        "name": question.get("question", ""),
-                        "url": url,
-                        "snippet": snippet
-                    })
-
-        return contexts[:REFERENCE_COUNT]
-    except KeyError:
-        logger.error(f"Error encountered: {json_content}")
+        logger.error(f"发生错误：{json_content}")
         return []
 
 class RAG(Photon):
@@ -311,15 +167,6 @@ class RAG(Photon):
         "resource_shape": "cpu.small",
         # You most likely don't need to change this.
         "env": {
-            # Choose the backend. Currently, we support BING and GOOGLE. For
-            # simplicity, in this demo, if you specify the backend as LEPTON,
-            # we will use the hosted serverless version of lepton search api
-            # at https://search-api.lepton.run/ to do the search and RAG, which
-            # runs the same code (slightly modified and might contain improvements)
-            # as this demo.
-            "BACKEND": "LEPTON",
-            # If you are using google, specify the search cx.
-            "GOOGLE_SEARCH_CX": "",
             # Specify the LLM model you are going to use.
             "LLM_MODEL": "mixtral-8x7b",
             # For all the search queries and results, we will use the Lepton KV to
@@ -334,16 +181,7 @@ class RAG(Photon):
         # Secrets you need to have: search api subscription key, and lepton
         # workspace token to query lepton's llama models.
         "secret": [
-            # If you use BING, you need to specify the subscription key. Otherwise
-            # it is not needed.
-            "BING_SEARCH_V7_SUBSCRIPTION_KEY",
-            # If you use GOOGLE, you need to specify the search api key. Note that
-            # you should also specify the cx in the env.
-            "GOOGLE_SEARCH_API_KEY",
-            # If you use Serper, you need to specify the search api key.
             "SERPER_SEARCH_API_KEY",
-            # If you use SearchApi, you need to specify the search api key.
-            "SEARCHAPI_API_KEY",
             # You need to specify the workspace token to query lepton's LLM models.
             "LEPTON_WORKSPACE_TOKEN",
         ],
@@ -380,44 +218,19 @@ class RAG(Photon):
         Initializes photon configs.
         """
         # First, log in to the workspace.
-        leptonai.api.workspace.login()
-        self.backend = os.environ["BACKEND"].upper()
-        if self.backend == "LEPTON":
-            self.leptonsearch_client = Client(
-                "https://search-api.lepton.run/",
-                token=os.environ.get("LEPTON_WORKSPACE_TOKEN")
-                or WorkspaceInfoLocalRecord.get_current_workspace_token(),
-                stream=True,
-                timeout=httpx.Timeout(connect=10, read=120, write=120, pool=10),
-            )
-        elif self.backend == "BING":
-            self.search_api_key = os.environ["BING_SEARCH_V7_SUBSCRIPTION_KEY"]
-            self.search_function = lambda query: search_with_bing(
-                query,
-                self.search_api_key,
-            )
-        elif self.backend == "GOOGLE":
-            self.search_api_key = os.environ["GOOGLE_SEARCH_API_KEY"]
-            self.search_function = lambda query: search_with_google(
-                query,
-                self.search_api_key,
-                os.environ["GOOGLE_SEARCH_CX"],
-            )
-        elif self.backend == "SERPER":
-            self.search_api_key = os.environ["SERPER_SEARCH_API_KEY"]
-            self.search_function = lambda query: search_with_serper(
-                query,
-                self.search_api_key,
-            )
-        elif self.backend == "SEARCHAPI":
-            self.search_api_key = os.environ["SEARCHAPI_API_KEY"]
-            self.search_function = lambda query: search_with_searchapi(
-                query,
-                self.search_api_key,
-            )
-        else:
-            raise RuntimeError("Backend must be LEPTON, BING, GOOGLE, SERPER or SEARCHAPI.")
+        leptonai.api.v0.workspace.login()
+        
+        # 从环境变量中获取SERPER搜索API的密钥
+        self.search_api_key = os.environ["SERPER_SEARCH_API_KEY"]
+        
+        # 定义搜索函数，使用SERPER搜索引擎进行查询
+        self.search_function = lambda query: search_with_serper(
+            query,
+            self.search_api_key,
+        )
+        
         self.model = os.environ["LLM_MODEL"]
+
         # An executor to carry out async tasks, such as uploading to KV.
         self.executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=self.handler_max_concurrency * 2
@@ -500,8 +313,7 @@ class RAG(Photon):
         if not contexts:
             # Prepend a warning to the user
             yield (
-                "(The search engine returned nothing for this query. Please take the"
-                " answer with a grain of salt.)\n\n"
+                "(搜索引擎未能为此查询返回任何结果。请谨慎对待以下回答。)\n\n"
             )
         for chunk in llm_response:
             if chunk.choices:
@@ -574,21 +386,11 @@ class RAG(Photon):
                 )
         else:
             raise HTTPException(status_code=400, detail="search_uuid must be provided.")
-
-        if self.backend == "LEPTON":
-            # delegate to the lepton search api.
-            result = self.leptonsearch_client.query(
-                query=query,
-                search_uuid=search_uuid,
-                generate_related_questions=generate_related_questions,
-            )
-            return StreamingResponse(content=result, media_type="text/html")
-
         # First, do a search query.
         query = query or _default_query
-        # Basic attack protection: remove "[INST]" or "[/INST]" from the query
+        # Basic attack protection: remove " " or " " from the query
         query = re.sub(r"\[/?INST\]", "", query)
-        contexts = self.search_function(query)
+        contexts = self.search_function(query)  # 只使用SERPER搜索
 
         system_prompt = _rag_query_text.format(
             context="\n\n".join(
