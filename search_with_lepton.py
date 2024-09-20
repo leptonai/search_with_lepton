@@ -4,6 +4,7 @@ import json
 import os
 import re
 import threading
+import leptonai.api
 import requests
 import traceback
 from typing import Annotated, List, Generator, Optional
@@ -18,7 +19,6 @@ from leptonai import Client
 from leptonai.kv import KV
 from leptonai.photon import Photon, StaticFiles
 from leptonai.photon.types import to_bool
-from leptonai.api.workspace import WorkspaceInfoLocalRecord
 from leptonai.util import tool
 
 ################################################################################
@@ -366,8 +366,7 @@ class RAG(Photon):
         except AttributeError:
             thread_local.client = openai.OpenAI(
                 base_url=f"https://{self.model}.lepton.run/api/v1/",
-                api_key=os.environ.get("LEPTON_WORKSPACE_TOKEN")
-                or WorkspaceInfoLocalRecord.get_current_workspace_token(),
+                api_key=os.environ.get("LEPTON_WORKSPACE_TOKEN"),
                 # We will set the connect timeout to be 10 seconds, and read/write
                 # timeout to be 120 seconds, in case the inference server is
                 # overloaded.
@@ -380,13 +379,12 @@ class RAG(Photon):
         Initializes photon configs.
         """
         # First, log in to the workspace.
-        leptonai.api.workspace.login()
+        leptonai.api.v0.workspace.login()
         self.backend = os.environ["BACKEND"].upper()
         if self.backend == "LEPTON":
             self.leptonsearch_client = Client(
                 "https://search-api.lepton.run/",
-                token=os.environ.get("LEPTON_WORKSPACE_TOKEN")
-                or WorkspaceInfoLocalRecord.get_current_workspace_token(),
+                token=os.environ.get("LEPTON_WORKSPACE_TOKEN"),
                 stream=True,
                 timeout=httpx.Timeout(connect=10, read=120, write=120, pool=10),
             )
