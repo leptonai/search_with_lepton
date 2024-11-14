@@ -18,7 +18,7 @@ from leptonai import Client
 from leptonai.kv import KV
 from leptonai.photon import Photon, StaticFiles
 from leptonai.photon.types import to_bool
-from leptonai.api.workspace import WorkspaceInfoLocalRecord
+from leptonai.api.v0.workspace import WorkspaceInfoLocalRecord
 from leptonai.util import tool
 
 ################################################################################
@@ -380,7 +380,7 @@ class RAG(Photon):
         Initializes photon configs.
         """
         # First, log in to the workspace.
-        leptonai.api.workspace.login()
+        leptonai.api.v0.workspace.login()
         self.backend = os.environ["BACKEND"].upper()
         if self.backend == "LEPTON":
             self.leptonsearch_client = Client(
