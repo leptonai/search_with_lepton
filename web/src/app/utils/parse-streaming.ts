@@ -1,6 +1,7 @@
 import { Relate } from "@/app/interfaces/relate";
 import { Source } from "@/app/interfaces/source";
 import { fetchStream } from "@/app/utils/fetch-stream";
+import { LocalHistory } from "@/app/interfaces/history";
 
 const LLM_SPLIT = "__LLM_RESPONSE__";
 const RELATED_SPLIT = "__RELATED_QUESTIONS__";
@@ -12,6 +13,7 @@ export const parseStreaming = async (
   onSources: (value: Source[]) => void,
   onMarkdown: (value: string) => void,
   onRelates: (value: Relate[]) => void,
+  onFinish: (result: LocalHistory) => void,
   onError?: (status: number) => void,
 ) => {
   const decoder = new TextDecoder();
@@ -30,18 +32,19 @@ export const parseStreaming = async (
       search_uuid,
     }),
   });
+  let finalRelates: Relate[] = [];
+  let finalMarkdown: string = "";
+  let finalSources: Source[] = [];
   if (response.status !== 200) {
     onError?.(response.status);
     return;
   }
   const markdownParse = (text: string) => {
-    onMarkdown(
-      text
-        .replace(/\[\[([cC])itation/g, "[citation")
-        .replace(/[cC]itation:(\d+)]]/g, "citation:$1]")
-        .replace(/\[\[([cC]itation:\d+)]](?!])/g, `[$1]`)
-        .replace(/\[[cC]itation:(\d+)]/g, "[citation]($1)"),
-    );
+    return text
+      .replace(/\[\[([cC])itation/g, "[citation")
+      .replace(/[cC]itation:(\d+)]]/g, "citation:$1]")
+      .replace(/\[\[([cC]itation:\d+)]](?!])/g, `[$1]`)
+      .replace(/\[[cC]itation:(\d+)]/g, "[citation]($1)");
   };
   fetchStream(
     response,
@@ -52,27 +55,38 @@ export const parseStreaming = async (
         const [sources, rest] = chunks.split(LLM_SPLIT);
         if (!sourcesEmitted) {
           try {
-            onSources(JSON.parse(sources));
+            finalSources = JSON.parse(sources);
           } catch (e) {
-            onSources([]);
+            finalSources = [];
           }
+          onSources(finalSources);
         }
         sourcesEmitted = true;
         if (rest.includes(RELATED_SPLIT)) {
           const [md] = rest.split(RELATED_SPLIT);
-          markdownParse(md);
+          finalMarkdown = markdownParse(md);
         } else {
-          markdownParse(rest);
+          finalMarkdown = markdownParse(rest);
         }
+        onMarkdown(finalMarkdown);
       }
     },
     () => {
       const [_, relates] = chunks.split(RELATED_SPLIT);
       try {
-        onRelates(JSON.parse(relates));
+        finalRelates = JSON.parse(relates);
       } catch (e) {
-        onRelates([]);
+        finalRelates = [];
       }
+      onRelates(finalRelates);
+      onFinish({
+        markdown: finalMarkdown,
+        sources: finalSources,
+        relates: finalRelates,
+        rid: search_uuid,
+        query,
+        timestamp: new Date().valueOf(),
+      });
     },
   );
 };
