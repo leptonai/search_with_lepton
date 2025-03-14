@@ -21,7 +21,7 @@ There are two default supported search engines: Bing and Google.
 To use the Bing Web Search API, please visit [this link](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api) to obtain your Bing subscription key.
 
 ### Google Search
-You have three options for Google Search: you can use the [SearchApi Google Search API](https://www.searchapi.io/) from SearchApi, [Serper Google Search API](https://www.serper.dev) from Serper, or opt for the [Programmable Search Engine](https://developers.google.com/custom-search) provided by Google.
+You have three options for Google Search: you can use the [SearchApi Google Search API](https://www.searchapi.io/) from SearchApi, [Serper Google Search API](https://serper.dev) from Serper, or opt for the [Programmable Search Engine](https://developers.google.com/custom-search) provided by Google.
 
 ## Setup LLM and KV
 
@@ -89,4 +89,4 @@ You can also deploy your own version via
 lep photon run -n search-with-lepton-modified -m search_with_lepton.py --env BACKEND=BING --env BING_SEARCH_V7_SUBSCRIPTION_KEY=YOUR_BING_SUBSCRIPTION_KEY
 ```
 
-Learn more about `lep photon` [here](https://www.lepton.ai/docs).
+Learn more about `lep photon` [here](https://www.lepton.ai/docs/references/lep_photon).
