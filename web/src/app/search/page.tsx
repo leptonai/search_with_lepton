@@ -3,7 +3,9 @@ import { Result } from "@/app/components/result";
 import { Search } from "@/app/components/search";
 import { Title } from "@/app/components/title";
 import { useSearchParams } from "next/navigation";
-export default function SearchPage() {
+import { Suspense } from "react";
+
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = decodeURIComponent(searchParams.get("q") || "");
   const rid = decodeURIComponent(searchParams.get("rid") || "");
@@ -23,5 +25,13 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
