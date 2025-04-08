@@ -135,7 +135,12 @@ def search_with_google(query: str, subscription_key: str, cx: str):
         raise HTTPException(response.status_code, "Search engine error.")
     json_content = response.json()
     try:
-        contexts = json_content["items"][:REFERENCE_COUNT]
+        # convert to the same format as bing
+        items = json_content["items"][:REFERENCE_COUNT]
+        contexts = [
+            {"id": c["cacheId"], "name": c["title"], "url": c["link"], "snippet": c["snippet"]}
+            for c in items
+        ]
     except KeyError:
         logger.error(f"Error encountered: {json_content}")
         return []
@@ -169,7 +174,7 @@ def search_with_serper(query: str, subscription_key: str):
         raise HTTPException(response.status_code, "Search engine error.")
     json_content = response.json()
     try:
-        # convert to the same format as bing/google
+        # convert to the same format as bing
         contexts = []
         if json_content.get("knowledgeGraph"):
             url = json_content["knowledgeGraph"].get("descriptionUrl") or json_content["knowledgeGraph"].get("website")
@@ -226,7 +231,7 @@ def search_with_searchapi(query: str, subscription_key: str):
         raise HTTPException(response.status_code, "Search engine error.")
     json_content = response.json()
     try:
-        # convert to the same format as bing/google
+        # convert to the same format as bing
         contexts = []
 
         if json_content.get("answer_box"):
@@ -266,14 +271,14 @@ def search_with_searchapi(query: str, subscription_key: str):
             {"name": c["title"], "url": c["link"], "snippet": c.get("snippet", "")}
             for c in json_content["organic_results"]
         ]
-        
+
         if json_content.get("related_questions"):
             for question in json_content["related_questions"]:
                 if question.get("source"):
                     url = question.get("source").get("link", "")
                 else:
-                    url = ""  
-                    
+                    url = ""
+
                 snippet = question.get("answer", "")
 
                 if url and snippet:
